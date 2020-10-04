@@ -1,127 +1,110 @@
-uint32_t effTimer;
-
-void effectsTick()
-{
-  if (!dawnFlag)
-  {
-    if (ONflag && (millis() - effTimer >= ((currentMode < 5 || currentMode > 13) ? modes[currentMode].Speed : 50)))
-    {
-      effTimer = millis();
-      switch (currentMode)
-      {
-        case EFF_FIRE:           fireRoutine(true);           break;
-        case EFF_WATERFALL:      fire2012WithPalette();       break;
-        case EFF_RAINBOW_VER:    rainbowVerticalRoutine();    break;
-        case EFF_RAINBOW_DIAG:   rainbowDiagonalRoutine();    break;
-        case EFF_COLORS:         colorsRoutine();             break;
-        case EFF_CLOUDS:         cloudsNoiseRoutine();        break;
-        case EFF_LAVA:           lavaNoiseRoutine();          break;
-        case EFF_PLASMA:         plasmaNoiseRoutine();        break;
-        case EFF_RAINBOW_STRIPE: rainbowStripeNoiseRoutine(); break;
-        case EFF_ZEBRA:          zebraNoiseRoutine();         break;
-        case EFF_NOISE:          RainbowCometRoutine();       break;
-        case EFF_COLOR:          colorRoutine();              break;
-        case EFF_SNOW:           snowRoutine();               break;
-        case EFF_SNOWSTORM:      snowStormRoutine();          break;
-        case EFF_MATRIX:         matrixRoutine();             break;
-        case EFF_LIGHTERS:       lightersRoutine();           break;
-        case EFF_WHITE_COLOR:    whiteColorStripeRoutine();   break;
-        default:                                              break;
+void animation() {
+  // согласно режиму
+  switch (this_mode) {
+    case 0: //подсветка
+        for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(LIGHT_COLOR, LIGHT_SAT, BRIGHTNESS);
+          break;   
+    case 1: //подсветка
+      if (millis() - color_timer > COLOR_SPEED) {
+            color_timer = millis();
+            if (++this_color > 255) this_color = 0;
+          }
+          for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(this_color, LIGHT_SAT, BRIGHTNESS);
+          break;
+    case 2: //подсветка
+      if (millis() - rainbow_timer > 30) {
+            rainbow_timer = millis();
+            this_color += RAINBOW_PERIOD;
+            if (this_color > 255) this_color = 0;
+            if (this_color < 0) this_color = 255;
+          }
+          rainbow_steps = this_color;
+          for (int i = 0; i < NUM_LEDS; i++) {
+            leds[i] = CHSV((int)floor(rainbow_steps), 255, BRIGHTNESS);
+            rainbow_steps += RAINBOW_STEP_2;
+            if (rainbow_steps > 255) rainbow_steps = 0;
+            if (rainbow_steps < 0) rainbow_steps = 255;
+          }
+          break;
+    case 3: //зеленая-красная громкость
+       count = 0;
+      for (int i = (MAX_CH - 1); i > ((MAX_CH - 1) - Rlenght); i--) {
+        leds[i] = ColorFromPalette(myPal, (count * index), BRIGHTNESS);   // заливка по палитре " от зелёного к красному"
+        count++;
       }
-      FastLED.show();
-    }
+      count = 0;
+      for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
+        leds[i] = ColorFromPalette(myPal, (count * index), BRIGHTNESS);   // заливка по палитре " от зелёного к красному"
+        count++;
+      }
+      if (EMPTY_BRIGHT > 0) {
+        CHSV this_dark = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+        for (int i = ((MAX_CH - 1) - Rlenght); i > 0; i--)
+          leds[i] = this_dark;
+        for (int i = MAX_CH + Llenght; i < NUM_LEDS; i++)
+          leds[i] = this_dark;
+      }
+      break;
+    case 4: //радуга-громкость
+      if (millis() - rainbow_timer > 30) {
+        rainbow_timer = millis();
+        hue = floor((float)hue + RAINBOW_STEP);
+      }
+      count = 0;
+      for (int i = (MAX_CH - 1); i > ((MAX_CH - 1) - Rlenght); i--) {
+        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, BRIGHTNESS);  // заливка по палитре радуга
+        count++;
+      }
+      count = 0;
+      for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
+        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, BRIGHTNESS); // заливка по палитре радуга
+        count++;
+      }
+      if (EMPTY_BRIGHT > 0) {
+        CHSV this_dark = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+        for (int i = ((MAX_CH - 1) - Rlenght); i > 0; i--)
+          leds[i] = this_dark;
+        for (int i = MAX_CH + Llenght; i < NUM_LEDS; i++)
+          leds[i] = this_dark;
+      }
+      break;
+    case 5: //светомузыка
+         for (int i = 0; i < NUM_LEDS; i++) {
+          if (i < STRIPE)          leds[i] = CHSV(HIGH_COLOR, 255, thisBright[2]);
+          else if (i < STRIPE * 2) leds[i] = CHSV(MID_COLOR, 255, thisBright[1]);
+          else if (i < STRIPE * 3) leds[i] = CHSV(LOW_COLOR, 255, thisBright[0]);
+          else if (i < STRIPE * 4) leds[i] = CHSV(MID_COLOR, 255, thisBright[1]);
+          else if (i < STRIPE * 5) leds[i] = CHSV(HIGH_COLOR, 255, thisBright[2]);
+        }
+        break;
+    case 6: //бегущие частоты
+        if (running_flag[2]) leds[NUM_LEDS / 2] = CHSV(HIGH_COLOR, 255, thisBright[2]);
+        else if (running_flag[1]) leds[NUM_LEDS / 2] = CHSV(MID_COLOR, 255, thisBright[1]);
+        else if (running_flag[0]) leds[NUM_LEDS / 2] = CHSV(LOW_COLOR, 255, thisBright[0]);
+        else leds[NUM_LEDS / 2] = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+      leds[(NUM_LEDS / 2) - 1] = leds[NUM_LEDS / 2];
+      if (millis() - running_timer > RUNNING_SPEED) {
+        running_timer = millis();
+        for (int i = 0; i < NUM_LEDS / 2 - 1; i++) {
+          leds[i] = leds[i + 1];
+          leds[NUM_LEDS - i - 1] = leds[i];
+        }
+      }
+      break;
+    case 7: //стробоскоп-реакция
+      if (colorMusicFlash[0]) for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(LIGHT_COLOR, LIGHT_SAT, thisBright[0]);
+      break;
+    case 8: //огонь
+      fireRoutine(false);
+      delay(40);
+      generateValues = true;
+      break;
   }
 }
 
-void changePower()
-{
-  if (ONflag)
-  {
-    effectsTick();
-    for (uint8_t i = 0U; i < modes[currentMode].Brightness; i = constrain(i + 8, 0, modes[currentMode].Brightness))
-    {
-      FastLED.setBrightness(i);
-      delay(1);
-      FastLED.show();
-    }
-    FastLED.setBrightness(modes[currentMode].Brightness);
-    delay(2);
-    FastLED.show();
-  }
-  else
-  {
-    effectsTick();
-    for (uint8_t i = modes[currentMode].Brightness; i > 0; i = constrain(i - 8, 0, modes[currentMode].Brightness))
-    {
-      FastLED.setBrightness(i);
-      delay(1);
-      FastLED.show();
-    }
-    FastLED.clear();
-    delay(2);
-    FastLED.show();
-  }
-
-  #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)          // установка сигнала в пин, управляющий MOSFET транзистором, соответственно состоянию вкл/выкл матрицы
-  digitalWrite(MOSFET_PIN, ONflag ? MOSFET_LEVEL : !MOSFET_LEVEL);
-  #endif
-  
-  TimerManager::TimerRunning = false;
-  TimerManager::TimerHasFired = false;
-  TimerManager::TimeToFire = 0ULL;
-
-  #if (USE_MQTT)
-  if (espMode == 1U)
-  {
-    MqttManager::needToPublish = true;
-  }
-  #endif
+void LOWS() {
+  for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(STROBE_COLOR, STROBE_SAT, thisBright[0]);
 }
-
-void setDefaultParams(){
- modes[0].Speed = 95;
- modes[0].Color[0] = 1;
- modes[0].Color[1] = 255;
-
- modes[1].Speed = 75;
- modes[1].Color[0] = 170;
- modes[1].Color[1] = 255;
-
- modes[2].Speed = 25;
- modes[2].Scale = 20;
-
- modes[3].Scale = 30;
-
- modes[4].Scale = 5;
-
- modes[5].Speed = 240;
- modes[5].Scale = 40;
-
- modes[6].Speed = 240;
- modes[6].Scale = 40;
-
- modes[7].Speed = 233;
- modes[7].Scale = 26;
-
- modes[8].Speed = 250;
- modes[8].Scale = 25;
-
- modes[9].Speed = 250;
- modes[9].Scale = 28;
- modes[9].Color[0] = 35;
- modes[9].Color[1] = 0;
-
- modes[10].Color[0] = 0;
- modes[10].Color[1] = 255;
-
- modes[11].Color[0] = 35;
- modes[11].Color[1] = 0;
-
- modes[12].Color[0] = 35;
- modes[12].Color[1] = 0;
-
- modes[15].Scale = 40;
-
- modes[16].Speed = 100;
- modes[16].Scale = 100;
+void SILENCE() {
+  for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
 }
