@@ -40,16 +40,3 @@ void fullLowPass() {
   FastLED.setBrightness(BRIGHTNESS);  // вернуть яркость
   digitalWrite(MLED_PIN, !MLED_ON);    // выключить светодиод
 }
-
-// вспомогательная функция, изменяет величину value на шаг incr в пределах minimum.. maximum
-int smartIncr(int value, int incr_step, int mininmum, int maximum) {
-  int val_buf = value + incr_step;
-  val_buf = constrain(val_buf, mininmum, maximum);
-  return val_buf;
-}
-
-float smartIncrFloat(float value, float incr_step, float mininmum, float maximum) {
-  float val_buf = value + incr_step;
-  val_buf = constrain(val_buf, mininmum, maximum);
-  return val_buf;
-}

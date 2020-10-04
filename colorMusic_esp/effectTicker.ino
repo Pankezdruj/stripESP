@@ -2,14 +2,14 @@ void animation() {
   // согласно режиму
   switch (this_mode) {
     case 0: //подсветка
-        for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(LIGHT_COLOR, LIGHT_SAT, BRIGHTNESS);
+        for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(modes[this_mode].Color[0], modes[this_mode].Color[1], modes[this_mode].Brightness);
           break;   
     case 1: //подсветка
       if (millis() - color_timer > COLOR_SPEED) {
             color_timer = millis();
             if (++this_color > 255) this_color = 0;
           }
-          for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(this_color, LIGHT_SAT, BRIGHTNESS);
+          for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(this_color, modes[this_mode].Color[1], modes[this_mode].Brightness);
           break;
     case 2: //подсветка
       if (millis() - rainbow_timer > 30) {
@@ -20,7 +20,7 @@ void animation() {
           }
           rainbow_steps = this_color;
           for (int i = 0; i < NUM_LEDS; i++) {
-            leds[i] = CHSV((int)floor(rainbow_steps), 255, BRIGHTNESS);
+            leds[i] = CHSV((int)floor(rainbow_steps), 255, modes[this_mode].Brightness);
             rainbow_steps += RAINBOW_STEP_2;
             if (rainbow_steps > 255) rainbow_steps = 0;
             if (rainbow_steps < 0) rainbow_steps = 255;
@@ -29,16 +29,16 @@ void animation() {
     case 3: //зеленая-красная громкость
        count = 0;
       for (int i = (MAX_CH - 1); i > ((MAX_CH - 1) - Rlenght); i--) {
-        leds[i] = ColorFromPalette(myPal, (count * index), BRIGHTNESS);   // заливка по палитре " от зелёного к красному"
+        leds[i] = ColorFromPalette(myPal, (count * index), modes[this_mode].Brightness);   // заливка по палитре " от зелёного к красному"
         count++;
       }
       count = 0;
       for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
-        leds[i] = ColorFromPalette(myPal, (count * index), BRIGHTNESS);   // заливка по палитре " от зелёного к красному"
+        leds[i] = ColorFromPalette(myPal, (count * index), modes[this_mode].Brightness);   // заливка по палитре " от зелёного к красному"
         count++;
       }
       if (EMPTY_BRIGHT > 0) {
-        CHSV this_dark = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+        CHSV this_dark = CHSV(EMPTY_COLOR, 255, modes[this_mode].BGBrightness);
         for (int i = ((MAX_CH - 1) - Rlenght); i > 0; i--)
           leds[i] = this_dark;
         for (int i = MAX_CH + Llenght; i < NUM_LEDS; i++)
@@ -52,16 +52,16 @@ void animation() {
       }
       count = 0;
       for (int i = (MAX_CH - 1); i > ((MAX_CH - 1) - Rlenght); i--) {
-        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, BRIGHTNESS);  // заливка по палитре радуга
+        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, modes[this_mode].Brightness);  // заливка по палитре радуга
         count++;
       }
       count = 0;
       for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
-        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, BRIGHTNESS); // заливка по палитре радуга
+        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, modes[this_mode].Brightness); // заливка по палитре радуга
         count++;
       }
       if (EMPTY_BRIGHT > 0) {
-        CHSV this_dark = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+        CHSV this_dark = CHSV(EMPTY_COLOR, 255, modes[this_mode].BGBrightness);
         for (int i = ((MAX_CH - 1) - Rlenght); i > 0; i--)
           leds[i] = this_dark;
         for (int i = MAX_CH + Llenght; i < NUM_LEDS; i++)
@@ -92,7 +92,7 @@ void animation() {
       }
       break;
     case 7: //стробоскоп-реакция
-      if (colorMusicFlash[0]) for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(LIGHT_COLOR, LIGHT_SAT, thisBright[0]);
+      if (colorMusicFlash[0]) for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(modes[this_mode].Color[0], modes[this_mode].Color[1], thisBright[0]);
       break;
     case 8: //огонь
       fireRoutine(false);
@@ -103,8 +103,8 @@ void animation() {
 }
 
 void LOWS() {
-  for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(STROBE_COLOR, STROBE_SAT, thisBright[0]);
+  for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(modes[this_mode].Color[0], modes[this_mode].Color[1], thisBright[0]);
 }
 void SILENCE() {
-  for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+  for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(EMPTY_COLOR, 255, modes[this_mode].BGBrightness);
 }
