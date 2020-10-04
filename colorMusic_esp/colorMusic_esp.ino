@@ -5,14 +5,21 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
+#include "Constants.h"
 #include "CaptivePortalManager.h"
 #include <WiFiUdp.h>
 #include <EEPROM.h>
-#include "Types.h"
 #include "EepromManager.h"
-#include "Constants.h"
 
-
+// ----- пины подключения
+#define SOUND_R A0         // аналоговый пин вход аудио, правый канал
+//#define SOUND_L A1         // аналоговый пин вход аудио, левый канал
+#define SOUND_R_FREQ A0    // аналоговый пин вход аудио для режима с частотами (через кондер)
+#define BTN_PIN 3          // кнопка переключения режимов (PIN --- КНОПКА --- GND)
+                         
+#define MLED_PIN 13             // пин светодиода режимов
+#define MLED_ON HIGH
+#define LED_PIN 12              // пин DI светодиодной ленты
 
 void mainLoop() {
   if(RAVE_MODE) {
@@ -41,29 +48,29 @@ void mainLoop() {
       if (this_mode == 3 || this_mode == 4) {
         for (byte i = 0; i < 100; i ++) {                                 // делаем 100 измерений
           RcurrentLevel = analogRead(SOUND_R);                            // с правого
-          if (!MONO) LcurrentLevel = analogRead(SOUND_L);                 // и левого каналов
+          //if (!MONO) LcurrentLevel = analogRead(SOUND_L);                 // и левого каналов
 
           if (RsoundLevel < RcurrentLevel) RsoundLevel = RcurrentLevel;   // ищем максимальное
-          if (!MONO) if (LsoundLevel < LcurrentLevel) LsoundLevel = LcurrentLevel;   // ищем максимальное
+          //if (!MONO) if (LsoundLevel < LcurrentLevel) LsoundLevel = LcurrentLevel;   // ищем максимальное
         }
 
         // фильтруем по нижнему порогу шумов
         RsoundLevel = map(RsoundLevel, LOW_PASS, 1023, 0, 500);
-        if (!MONO)LsoundLevel = map(LsoundLevel, LOW_PASS, 1023, 0, 500);
+        //if (!MONO)LsoundLevel = map(LsoundLevel, LOW_PASS, 1023, 0, 500);
 
         // ограничиваем диапазон
         RsoundLevel = constrain(RsoundLevel, 0, 500);
-        if (!MONO)LsoundLevel = constrain(LsoundLevel, 0, 500);
+        //if (!MONO)LsoundLevel = constrain(LsoundLevel, 0, 500);
 
         // возводим в степень (для большей чёткости работы)
         RsoundLevel = pow(RsoundLevel, EXP);
-        if (!MONO)LsoundLevel = pow(LsoundLevel, EXP);
+        //if (!MONO)LsoundLevel = pow(LsoundLevel, EXP);
 
         // фильтр
         RsoundLevel_f = RsoundLevel * SMOOTH + RsoundLevel_f * (1 - SMOOTH);
-        if (!MONO)LsoundLevel_f = LsoundLevel * SMOOTH + LsoundLevel_f * (1 - SMOOTH);
+        //if (!MONO)LsoundLevel_f = LsoundLevel * SMOOTH + LsoundLevel_f * (1 - SMOOTH);
 
-        if (MONO) LsoundLevel_f = RsoundLevel_f;  // если моно, то левый = правому
+        //if (MONO) LsoundLevel_f = RsoundLevel_f;  // если моно, то левый = правому
 
         // заливаем "подложку", если яркость достаточная
         if (EMPTY_BRIGHT > 5) {
@@ -127,7 +134,7 @@ void mainLoop() {
           colorMusic_aver[i] = colorMusic[i] * averK + colorMusic_aver[i] * (1 - averK);  // общая фильтрация
           colorMusic_f[i] = colorMusic[i] * SMOOTH_FREQ + colorMusic_f[i] * (1 - SMOOTH_FREQ);      // локальная
           if (colorMusic_f[i] > ((float)colorMusic_aver[i] * MAX_COEF_FREQ)) {
-            thisBright[i] = BRIGHTNESS;
+            thisBright[i] = modes[this_mode].Brightness;
             colorMusicFlash[i] = true;
             running_flag[i] = true;
           } else colorMusicFlash[i] = false;
@@ -141,7 +148,6 @@ void mainLoop() {
       }
       if (this_mode == 0 || this_mode == 1 ||this_mode == 2 || this_mode == 8) animation();
 
-      if (!IRLremote.receiving())    // если на ИК приёмник не приходит сигнал (без этого НЕ РАБОТАЕТ!)
         FastLED.show();         // отправить значения на ленту
 
       if (this_mode != 6 && this_mode != 8)       // 6 режиму не нужна очистка!!!

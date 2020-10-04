@@ -25,7 +25,7 @@ void setup()
   ESP.wdtEnable(WDTO_8S);
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   if (CURRENT_LIMIT > 0) FastLED.setMaxPowerInVoltsAndMilliamps(5, CURRENT_LIMIT);
-  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setBrightness(50);
 
 
   pinMode(MLED_PIN, OUTPUT);        //Режим пина для светодиода режима на выход
@@ -33,45 +33,27 @@ void setup()
 
   pinMode(POT_GND, OUTPUT);
   digitalWrite(POT_GND, LOW);
-  butt1.setTimeout(900);
-
-  IRLremote.begin(IR_PIN);
 
   // для увеличения точности уменьшаем опорное напряжение,
   // выставив EXTERNAL и подключив Aref к выходу 3.3V на плате через делитель
   // GND ---[10-20 кОм] --- REF --- [10 кОм] --- 3V3
   // в данной схеме GND берётся из А0 для удобства подключения
-  if (POTENT) analogReference(EXTERNAL);
-  else
-  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-    analogReference(INTERNAL1V1);
-  #else
-    analogReference(INTERNAL);
-  #endif
-  sbi(ADCSRA, ADPS2);
-  cbi(ADCSRA, ADPS1);
-  sbi(ADCSRA, ADPS0);
+  analogReference(EXTERNAL);
+//  sbi(ADCSRA, ADPS2);
+//  cbi(ADCSRA, ADPS1);
+//  sbi(ADCSRA, ADPS0);
 
-  if (RESET_SETTINGS) EEPROM.write(100, 0);        // сброс флага настроек
+  if (RESET_SETTINGS) EEPROM.write(EEPROM_FIRST_RUN_ADDRESS, 0);        // сброс флага настроек
 
   if (AUTO_LOW_PASS && !EEPROM_LOW_PASS) {         // если разрешена автонастройка нижнего порога шумов
     autoLowPass();
   }
   if (EEPROM_LOW_PASS) {                // восстановить значения шумов из памяти
-    LOW_PASS = EEPROM.readInt(70);
-    SPEKTR_LOW_PASS = EEPROM.readInt(72);
+    LOW_PASS = EEPROM.read(EEPROM_LOW_PASS_ADRESS);
+    SPEKTR_LOW_PASS = EEPROM.read(EEPROM_LOW_PASS_ADRESS);
   }
 
-  // в 100 ячейке хранится число 100. Если нет - значит это первый запуск системы
-  if (KEEP_SETTINGS) {
-    if (EEPROM.read(100) != 100) {
-      //Serial.println(F("First start"));
-      EEPROM.write(100, 100);
-      updateEEPROM();
-    } else {
-      readEEPROM();
-    }
-  }
+  initEEPROM();
 
   #if (SETTINGS_LOG == 1)
     Serial.print(F("this_mode = ")); Serial.println(this_mode);
@@ -143,7 +125,6 @@ void setup()
       LOG.println(F("WiFi сеть не определена, запуск WiFi точки доступа для настройки параметров подключения к WiFi сети..."));
       CaptivePortalManager::captivePortalCalled = true;
       wifiManager.setBreakAfterConfig(true);                // перезагрузка после ввода и сохранения имени и пароля WiFi сети
-      showWarning(CRGB::Yellow, 1000U, 500U);               // мигание жёлтым цветом 0,5 секунды (1 раз) - нужно ввести параметры WiFi сети для подключения
     }
 
     wifiManager.setConnectTimeout(ESP_CONN_TIMEOUT);        // установка времени ожидания подключения к WiFi сети, затем старт WiFi точки доступа
@@ -177,7 +158,6 @@ void setup()
         wifiManager.resetSettings();
       }
 
-      showWarning(CRGB::Red, 1000U, 500U);                  // мигание красным цветом 0,5 секунды (1 раз) - ожидание ввода SSID'а и пароля WiFi сети прекращено, перезагрузка
       ESP.restart();
     }
 

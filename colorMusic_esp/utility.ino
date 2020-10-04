@@ -24,8 +24,8 @@ void autoLowPass() {
   }
   SPEKTR_LOW_PASS = thisMax + LOW_PASS_FREQ_ADD;  // нижний порог как максимум тишины
   if (EEPROM_LOW_PASS && !AUTO_LOW_PASS) {
-    EEPROM.updateInt(70, LOW_PASS);
-    EEPROM.updateInt(72, SPEKTR_LOW_PASS);
+    EEPROM.write(EEPROM_LOW_PASS_ADRESS, LOW_PASS);
+    EEPROM.write(EEPROM_SPEKTR_LOW_PASS_ADRESS, SPEKTR_LOW_PASS);
   }
 }
 
@@ -37,6 +37,6 @@ void fullLowPass() {
   delay(500);               // подождать чутка
   autoLowPass();            // измерить шумы
   delay(500);               // подождать
-  FastLED.setBrightness(BRIGHTNESS);  // вернуть яркость
+  FastLED.setBrightness(modes[this_mode].Brightness);  // вернуть яркость
   digitalWrite(MLED_PIN, !MLED_ON);    // выключить светодиод
 }

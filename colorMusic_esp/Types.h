@@ -5,7 +5,7 @@ struct ModeType
 {
   uint8_t Brightness = 50U;
   uint8_t BGBrightness = 0U;
-  uint8_t Scale = 40U;
+  uint8_t Speed = 40U;
   uint8_t Color[2] = {20U, 20U};
 };
 

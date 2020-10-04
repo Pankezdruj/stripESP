@@ -29,12 +29,12 @@ void animation() {
     case 3: //зеленая-красная громкость
        count = 0;
       for (int i = (MAX_CH - 1); i > ((MAX_CH - 1) - Rlenght); i--) {
-        leds[i] = ColorFromPalette(myPal, (count * index), modes[this_mode].Brightness);   // заливка по палитре " от зелёного к красному"
+        leds[i] = ColorFromPalette(myPal, (count * ind), modes[this_mode].Brightness);   // заливка по палитре " от зелёного к красному"
         count++;
       }
       count = 0;
       for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
-        leds[i] = ColorFromPalette(myPal, (count * index), modes[this_mode].Brightness);   // заливка по палитре " от зелёного к красному"
+        leds[i] = ColorFromPalette(myPal, (count * ind), modes[this_mode].Brightness);   // заливка по палитре " от зелёного к красному"
         count++;
       }
       if (EMPTY_BRIGHT > 0) {
@@ -52,12 +52,12 @@ void animation() {
       }
       count = 0;
       for (int i = (MAX_CH - 1); i > ((MAX_CH - 1) - Rlenght); i--) {
-        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, modes[this_mode].Brightness);  // заливка по палитре радуга
+        leds[i] = ColorFromPalette(RainbowColors_p, (count * ind) / 2 - hue, modes[this_mode].Brightness);  // заливка по палитре радуга
         count++;
       }
       count = 0;
       for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
-        leds[i] = ColorFromPalette(RainbowColors_p, (count * index) / 2 - hue, modes[this_mode].Brightness); // заливка по палитре радуга
+        leds[i] = ColorFromPalette(RainbowColors_p, (count * ind) / 2 - hue, modes[this_mode].Brightness); // заливка по палитре радуга
         count++;
       }
       if (EMPTY_BRIGHT > 0) {

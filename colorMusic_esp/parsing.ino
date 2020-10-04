@@ -45,14 +45,14 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 {
     char buff[MAX_UDP_BUFFER_SIZE], *endToken = NULL;
 
-    else if (!strncmp_P(inputBuffer, PSTR("GET"), 3))
+     if (!strncmp_P(inputBuffer, PSTR("GET"), 3))
     {
       sendCurrent(inputBuffer);
     }
 
     else if (!strncmp_P(inputBuffer, PSTR("EFF"), 3))
     {
-      EepromManager::SaveModesSettings(&currentMode, modes);
+      SaveModesSettings((int8_t)this_mode);
       memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       this_mode = (uint8_t)atoi(buff);
       eeprom_timer = millis();
@@ -126,7 +126,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     else if (!strncmp_P(inputBuffer, PSTR("CAL"), 3))
     {
       fullLowPass();
-      eepromTimeout = millis();
+      eeprom_timer = millis();
+      eeprom_flag = true;
     }
     else if (!strncmp_P(inputBuffer, PSTR("RAVE"), 4))
     {
@@ -137,7 +138,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       sendCurrent(inputBuffer);
     }
     
-
+}
     
 void sendCurrent(char *outputBuffer)
 {
@@ -145,7 +146,7 @@ void sendCurrent(char *outputBuffer)
     EEPROM.read(EEPROM_LAMP_ID_ADRESS),
     LAMP_TYPE,
     this_mode,
-    modes[this_mode].Brightness == 10 ? 0 : modes[currentMode].Brightness,
+    modes[this_mode].Brightness == 10 ? 0 : modes[this_mode].Brightness,
     modes[this_mode].BGBrightness,
     modes[this_mode].Speed,
     modes[this_mode].Color[0],
@@ -155,6 +156,4 @@ void sendCurrent(char *outputBuffer)
     espMode
     );
   sprintf_P(outputBuffer, PSTR("%s %f"), outputBuffer, VERSION);
-}
-
 }
