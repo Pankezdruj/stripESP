@@ -125,7 +125,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("CAL"), 3))
     {
-      fullLowPass();
+      //fullLowPass();
       eeprom_timer = millis();
       eeprom_flag = true;
     }

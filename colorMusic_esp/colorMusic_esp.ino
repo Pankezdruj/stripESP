@@ -101,51 +101,51 @@ void mainLoop() {
       }
 
       // 5,6,7 режим - цветомузыка
-      if (this_mode == 5 || this_mode == 6 || this_mode == 7) {
-        analyzeAudio();
-        colorMusic[0] = 0;
-        colorMusic[1] = 0;
-        colorMusic[2] = 0;
-        for (int i = 0 ; i < 32 ; i++) {
-          if (fht_log_out[i] < SPEKTR_LOW_PASS) fht_log_out[i] = 0;
-        }
-        // низкие частоты, выборка со 2 по 5 тон (0 и 1 зашумленные!)
-        for (byte i = 2; i < 4; i++) {
-          if (fht_log_out[i] > colorMusic[0]) colorMusic[0] = fht_log_out[i];
-        }
-        // средние частоты, выборка с 6 по 10 тон
-        for (byte i = 6; i < 11; i++) {
-          if (fht_log_out[i] > colorMusic[1]) colorMusic[1] = fht_log_out[i];
-        }
-        // высокие частоты, выборка с 11 по 31 тон
-        for (byte i = 11; i < 32; i++) {
-          if (fht_log_out[i] > colorMusic[2]) colorMusic[2] = fht_log_out[i];
-        }
-        freq_max = 0;
-        for (byte i = 0; i < 30; i++) {
-          if (fht_log_out[i + 2] > freq_max) freq_max = fht_log_out[i + 2];
-          if (freq_max < 5) freq_max = 5;
-
-          if (freq_f[i] < fht_log_out[i + 2]) freq_f[i] = fht_log_out[i + 2];
-          else freq_f[i] = 0;
-        }
-        freq_max_f = freq_max * averK + freq_max_f * (1 - averK);
-        for (byte i = 0; i < 3; i++) {
-          colorMusic_aver[i] = colorMusic[i] * averK + colorMusic_aver[i] * (1 - averK);  // общая фильтрация
-          colorMusic_f[i] = colorMusic[i] * SMOOTH_FREQ + colorMusic_f[i] * (1 - SMOOTH_FREQ);      // локальная
-          if (colorMusic_f[i] > ((float)colorMusic_aver[i] * MAX_COEF_FREQ)) {
-            thisBright[i] = modes[this_mode].Brightness;
-            colorMusicFlash[i] = true;
-            running_flag[i] = true;
-          } else colorMusicFlash[i] = false;
-          if (thisBright[i] >= 0) thisBright[i] -= SMOOTH_STEP;
-          if (thisBright[i] < EMPTY_BRIGHT) {
-            thisBright[i] = EMPTY_BRIGHT;
-            running_flag[i] = false;
-          }
-        }
-        animation();
-      }
+//      if (this_mode == 5 || this_mode == 6 || this_mode == 7) {
+//        analyzeAudio();
+//        colorMusic[0] = 0;
+//        colorMusic[1] = 0;
+//        colorMusic[2] = 0;
+//        for (int i = 0 ; i < 32 ; i++) {
+//          if (fht_log_out[i] < SPEKTR_LOW_PASS) fht_log_out[i] = 0;
+//        }
+//        // низкие частоты, выборка со 2 по 5 тон (0 и 1 зашумленные!)
+//        for (byte i = 2; i < 4; i++) {
+//          if (fht_log_out[i] > colorMusic[0]) colorMusic[0] = fht_log_out[i];
+//        }
+//        // средние частоты, выборка с 6 по 10 тон
+//        for (byte i = 6; i < 11; i++) {
+//          if (fht_log_out[i] > colorMusic[1]) colorMusic[1] = fht_log_out[i];
+//        }
+//        // высокие частоты, выборка с 11 по 31 тон
+//        for (byte i = 11; i < 32; i++) {
+//          if (fht_log_out[i] > colorMusic[2]) colorMusic[2] = fht_log_out[i];
+//        }
+//        freq_max = 0;
+//        for (byte i = 0; i < 30; i++) {
+//          if (fht_log_out[i + 2] > freq_max) freq_max = fht_log_out[i + 2];
+//          if (freq_max < 5) freq_max = 5;
+//
+//          if (freq_f[i] < fht_log_out[i + 2]) freq_f[i] = fht_log_out[i + 2];
+//          else freq_f[i] = 0;
+//        }
+//        freq_max_f = freq_max * averK + freq_max_f * (1 - averK);
+//        for (byte i = 0; i < 3; i++) {
+//          colorMusic_aver[i] = colorMusic[i] * averK + colorMusic_aver[i] * (1 - averK);  // общая фильтрация
+//          colorMusic_f[i] = colorMusic[i] * SMOOTH_FREQ + colorMusic_f[i] * (1 - SMOOTH_FREQ);      // локальная
+//          if (colorMusic_f[i] > ((float)colorMusic_aver[i] * MAX_COEF_FREQ)) {
+//            thisBright[i] = modes[this_mode].Brightness;
+//            colorMusicFlash[i] = true;
+//            running_flag[i] = true;
+//          } else colorMusicFlash[i] = false;
+//          if (thisBright[i] >= 0) thisBright[i] -= SMOOTH_STEP;
+//          if (thisBright[i] < EMPTY_BRIGHT) {
+//            thisBright[i] = EMPTY_BRIGHT;
+//            running_flag[i] = false;
+//          }
+//        }
+//        animation();
+//      }
       if (this_mode == 0 || this_mode == 1 ||this_mode == 2 || this_mode == 8) animation();
 
         FastLED.show();         // отправить значения на ленту
@@ -195,10 +195,10 @@ void settingsTick() {
 void analyzeAudio() {
   for (int i = 0 ; i < FHT_N ; i++) {
     int sample = analogRead(SOUND_R_FREQ);
-    fht_input[i] = sample; // put real data into bins
+   // fht_input[i] = sample; // put real data into bins
   }
-  fht_window();  // window the data for better frequency response
-  fht_reorder(); // reorder the data before doing the fht
-  fht_run();     // process the data in the fht
-  fht_mag_log(); // take the output of the fht
+//  fht_window();  // window the data for better frequency response
+//  fht_reorder(); // reorder the data before doing the fht
+//  fht_run();     // process the data in the fht
+//  fht_mag_log(); // take the output of the fht
 }

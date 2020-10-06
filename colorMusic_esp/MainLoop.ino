@@ -38,7 +38,7 @@ void setup()
   // выставив EXTERNAL и подключив Aref к выходу 3.3V на плате через делитель
   // GND ---[10-20 кОм] --- REF --- [10 кОм] --- 3V3
   // в данной схеме GND берётся из А0 для удобства подключения
-  analogReference(EXTERNAL);
+  //analogReference(EXTERNAL);
 //  sbi(ADCSRA, ADPS2);
 //  cbi(ADCSRA, ADPS1);
 //  sbi(ADCSRA, ADPS0);
@@ -46,7 +46,7 @@ void setup()
   if (RESET_SETTINGS) EEPROM.write(EEPROM_FIRST_RUN_ADDRESS, 0);        // сброс флага настроек
 
   if (AUTO_LOW_PASS && !EEPROM_LOW_PASS) {         // если разрешена автонастройка нижнего порога шумов
-    autoLowPass();
+    //autoLowPass();
   }
   if (EEPROM_LOW_PASS) {                // восстановить значения шумов из памяти
     LOW_PASS = EEPROM.read(EEPROM_LOW_PASS_ADRESS);

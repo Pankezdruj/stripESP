@@ -128,7 +128,7 @@ float freq_to_stripe = NUM_LEDS / 40; // /2 так как симметрия, и
 
 #define FHT_N 64         // ширина спектра х2
 #define LOG_OUT 1
-#include <FHT.h>         // преобразование Хартли
+//#include <FHT.h>         // преобразование Хартли
 
 //#include <EEPROMex.h>
 
