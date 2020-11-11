@@ -16,6 +16,7 @@ void settingsTick() {
         break;
     case(9): //радуга - реакция 
         RAINBOW_REACTION_STEP = floatMap((float)modes[9].Speed, 0.00, 100.00, 0.06, 2.00);
+        SMOOTH = floatMap((float)modes[9].Speed, 0.00, 100.00, 0.05, 1.00);
         break;
     case(12): //фоновая радуга 
         BG_SCROLL_SPEED = floatMap((float)modes[12].Speed, 0.00, 100.00, 0.00, 15.00);

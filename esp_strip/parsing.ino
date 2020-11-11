@@ -45,9 +45,9 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("EFF"), 3))
     {
-      EepromManager::SaveModesSettings(&currentMode, modes);
       memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       currentMode = (uint8_t)atoi(buff);
+      EepromManager::SaveModesSettings(&currentMode, modes);
       loadingFlag = true;
       settChanged = true;
       eepromTimeout = millis();
@@ -62,6 +62,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     {
       memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       modes[currentMode].Brightness = constrain(atoi(buff), 1, 255);
+      EepromManager::SaveModesSettings(&currentMode, modes);
       FastLED.setBrightness(modes[currentMode].Brightness);
       loadingFlag = true;
       settChanged = true;
@@ -74,6 +75,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     {
       memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       modes[currentMode].BGBrightness = atoi(buff);
+      EepromManager::SaveModesSettings(&currentMode, modes);
       loadingFlag = true;
       settChanged = true;
       eepromTimeout = millis();
@@ -87,6 +89,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       modes[currentMode].Color[0] = constrain(atoi(buff), 1, 255);
       memcpy(buff, &inputBuffer[7], strlen(inputBuffer));
       modes[currentMode].Color[1] = constrain(atoi(buff), 1, 255);
+      EepromManager::SaveModesSettings(&currentMode, modes);
       loadingFlag = true;
       settChanged = true;
       eepromTimeout = millis();
@@ -99,6 +102,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     {
       memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       modes[currentMode].Speed = atoi(buff);
+      EepromManager::SaveModesSettings(&currentMode, modes);
       loadingFlag = true;
       settChanged = true;
       eepromTimeout = millis();
@@ -135,6 +139,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     {
       memcpy(buff, &inputBuffer[4], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       RAVE_MODE = (atoi(buff) == 1 ? true : false);
+      EepromManager::SaveRaveMode(RAVE_MODE);
       if(RAVE_MODE) {
           modes[1].Speed = 100; //изменение цвета - скорость 
           modes[2].Speed = 100; //радуга - скорость 
@@ -164,6 +169,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     {
       memcpy(buff, &inputBuffer[2], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       REACTION = atoi(buff);
+      EepromManager::SaveReaction(REACTION);
       loadingFlag = true;
       settChanged = true;
       eepromTimeout = millis();

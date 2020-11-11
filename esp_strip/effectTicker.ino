@@ -10,64 +10,52 @@ void effectsTick()
       LsoundLevel = 0;
       maxLevel = 0;
 
-      // перваые два режима - громкость (VU meter)
-      if (currentMode >= 0) {
         for (byte i = 0; i < 100; i ++) {                                 // делаем 100 измерений
-          RcurrentLevel = analogRead(SOUND_R);                            // с правого
-
+          RcurrentLevel = analogRead(SOUND_R);
           if (RsoundLevel < RcurrentLevel) RsoundLevel = RcurrentLevel;   // ищем максимальное
         }
 
         // фильтруем по нижнему порогу шумов
-        RsoundLevel = map(RsoundLevel, LOW_PASS, 1023, 0, 500);
+        RsoundLevel = secureMap(RsoundLevel, LOW_PASS, 1023, 0, 500);
 
         // ограничиваем диапазон
-        RsoundLevel = constrain(RsoundLevel, 0, 500);
+        //RsoundLevel = constrain(RsoundLevel, 0, 500);
 
         // возводим в степень (для большей чёткости работы)
-        RsoundLevel = pow(RsoundLevel, EXP);
-        
+        //RsoundLevel = pow(RsoundLevel, EXP);
+        //Serial.print(RcurrentLevel);
+        //Serial.print(",");
         // фильтр
-        if (currentMode == 3) RsoundLevel_f = (RsoundLevel * SMOOTH) + (RsoundLevel_f * (1 - SMOOTH));
-        else RsoundLevel_f = RsoundLevel;
+        if(RsoundLevel_f < 1) RsoundLevel_f = 1; else if (RsoundLevel_f > 1000) RsoundLevel_f = 200;
+        if (currentMode == 3 || currentMode == 9) RsoundLevel_f = (RsoundLevel * SMOOTH) + (RsoundLevel_f * (1 - SMOOTH));
+        else RsoundLevel_f = RsoundLevel; 
+        //Serial.print(RsoundLevel_f);
+        //Serial.print(",");
         
-        LsoundLevel_f = RsoundLevel_f;      
+        averageLevel = (float)RsoundLevel_f * averK + averageLevel * (1 - averK);
+        if(averageLevel < 2) averageLevel = 2;
+        //Serial.print(averageLevel);
+        //Serial.print(",");
+        // принимаем максимальную громкость шкалы как среднюю, умноженную на некоторый коэффициент MAX_COEF
+        maxLevel = (float)averageLevel * MAX_COEF;
+        if(maxLevel < 5) maxLevel = 5;
+        if(maxLevel < RsoundLevel_f) maxLevel = RsoundLevel_f;
+        //Serial.print(maxLevel);
         
-        averageLevel = (float)(RsoundLevel_f + LsoundLevel_f) / 2 * averK + averageLevel * (1 - averK);
-        maxLevel = averageLevel + 50;
         thisBright[0] = RsoundLevel_f;
         thisBright[1] = averageLevel;
         thisBright[2] = maxLevel;
-
+        
         if(RsoundLevel_f > averageLevel+20) colorMusicFlash = true;
         else colorMusicFlash = false;
+        
         if (thisBright[3] > 0) thisBright[3] -= SMOOTH_STEP; else if(colorMusicFlash) thisBright[3] = 255;
         if (thisBright[3] < 0) thisBright[3] = 0;
-        // если значение выше порога - начинаем самое интересное
-        if (RsoundLevel_f > 15 && LsoundLevel_f > 15) {
-          
-          // принимаем максимальную громкость шкалы как среднюю, умноженную на некоторый коэффициент MAX_COEF
-          maxLevel = (float)averageLevel * MAX_COEF;
 
-          // преобразуем сигнал в длину ленты (где MAX_CH это половина количества светодиодов)
-          Rlenght = map(RsoundLevel_f, 0, maxLevel, 0, MAX_CH);
-          Llenght = map(LsoundLevel_f, 0, maxLevel, 0, MAX_CH);
-
-          // ограничиваем до макс. числа светодиодов
-          Rlenght = constrain(Rlenght, 0, MAX_CH);
-          Llenght = constrain(Llenght, 0, MAX_CH);
-          if(currentMode == 3) animation();
-        } else {
-          Rlenght = 0;
-          Llenght = 0;
-        }
-        if(currentMode != 3) animation();       // отрисовать
-      }
-        //animation();  
-
-      if (currentMode == 6 || currentMode == 14)       // 6 режиму не нужна очистка!!!
-        FastLED.clear();          // очистить массив пикселей
+        // преобразуем сигнал в длину ленты (где MAX_CH это половина количества светодиодов)
         
+        Rlenght = secureMap(RsoundLevel_f, 0, maxLevel, 0, MAX_CH);
+        animation();  
       FastLED.show();
     }
 }
@@ -102,6 +90,7 @@ void changePower()
   }
 }
 void animation() {
+  int scrollSpeed = 0;
   // согласно режиму
   switch (currentMode) {
     case 0: //подсветка
@@ -136,12 +125,12 @@ void animation() {
         hue = floor((float)hue + RAINBOW_STEP); 
       }
       count = 0;
-      for (int i = (MAX_CH - 1); i > 0; i--) {
+      for (int i = (MAX_CH - 1); i >= 0; i--) {
         leds[i] = ColorFromPalette(RainbowColors_p, (count * ind) / 2 - hue, modes[currentMode].BGBrightness);  // заливка по палитре радуга
         count++;
       }
       count = 0;
-      for (int i = MAX_CH; i < NUM_LEDS; i++ ) {
+      for (int i = MAX_CH; i <= NUM_LEDS; i++ ) {
         leds[i] = ColorFromPalette(RainbowColors_p, (count * ind) / 2 - hue, modes[currentMode].BGBrightness); // заливка по палитре радуга
         count++;
       } 
@@ -151,7 +140,7 @@ void animation() {
         count++;
       }
       count = 0;
-      for (int i = (MAX_CH); i < (MAX_CH + Llenght); i++ ) {
+      for (int i = (MAX_CH); i < (MAX_CH + Rlenght); i++ ) {
         leds[i] = ColorFromPalette(RainbowColors_p, (count * ind) / 2 - hue, modes[currentMode].Brightness); // заливка по палитре радуга
         count++;
       }
@@ -212,29 +201,39 @@ void animation() {
         for (int i = 0; i < NUM_LEDS; i++){
           leds[i] = CHSV((int) map(inoise8(i, noiseY),100, 200, 20, 255), 255, modes[currentMode].Brightness); 
         }
-        noiseY += (thisBright[0] < thisBright[1] ? 2 : floatMap((float)thisBright[0], 10.00, (float)thisBright[2], 2.00, 15.00)); 
-        if (noiseY == 1000000) noiseY = 0;
+        scrollSpeed = (thisBright[0] < thisBright[1] ? 2 : floatMap((float)thisBright[0], 10.00, (float)thisBright[2], 2.00, 15.00));
+        noiseY += (scrollSpeed < 0 ? 0.05 : scrollSpeed);
+        //Serial.print(",");
+        //Serial.println(scrollSpeed < 0 ? 0.05 : scrollSpeed);
+        if (noiseY > 1000000) noiseY = 0;
         break;
   case 11: //фоновое освещение + реакция
         for (int i = 0; i < NUM_LEDS; i++){
           leds[i] = CHSV((int) map(inoise8(i, noiseY),100, 200, modes[currentMode].Color[0]-10, modes[currentMode].Color[0]+15), 255, modes[currentMode].Brightness);
         }
-        noiseY += (thisBright[0] < thisBright[1] ? 2 : floatMap((float)thisBright[0], 10.00, (float)thisBright[2], 2.00, 15.00)); 
-        if (noiseY == 1000000) noiseY = 0;
+        scrollSpeed = (thisBright[0] < thisBright[1] ? 2 : floatMap((float)thisBright[0], 10.00, (float)thisBright[2], 2.00, 15.00));
+        noiseY += (scrollSpeed < 0 ? 0.05 : scrollSpeed);
+        //Serial.print(",");
+        //Serial.println(scrollSpeed < 0 ? 0.05 : scrollSpeed);
+        if (noiseY > 1000000) noiseY = 0;
         break;
   case 12: //фоновое радуга
         for (int i = 0; i < NUM_LEDS; i++){
           leds[i] = CHSV((int) map(inoise8(i, noiseY),100, 200, 20, 255), 255, modes[currentMode].Brightness); 
         }
         noiseY += BG_SCROLL_SPEED; //speed, 0 - slow, 15 - fast 
-        if (noiseY == 1000000) noiseY = 0;
+        //Serial.print(",");
+        //Serial.println(BG_SCROLL_SPEED);
+        if (noiseY > 1000000) noiseY = 0;
         break;
   case 13: //фоновое освещение
         for (int i = 0; i < NUM_LEDS; i++){
           leds[i] = CHSV((int) map(inoise8(i, noiseY),100, 200, modes[currentMode].Color[0]-10, modes[currentMode].Color[0]+15), 255, modes[currentMode].Brightness);
         }
         noiseY += BG_SCROLL_SPEED; //speed, 0 - slow, 15 - fast 
-        if (noiseY == 1000000) noiseY = 0;
+        //Serial.print(",");
+        //Serial.println(BG_SCROLL_SPEED);
+        if (noiseY > 1000000) noiseY = 0;
         break;
   case 14: //стробоскоп - изменения цвета
         if (millis() - color_timer > COLOR_SPEED) {

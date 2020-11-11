@@ -42,8 +42,8 @@ bool CaptivePortalManager::captivePortalCalled = false;
 
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println("beginned");
+  //Serial.begin(115200);
+  //Serial.println("beginned");
   ESP.wdtEnable(WDTO_8S);
 
   // ЛЕНТА/МАТРИЦА
@@ -60,6 +60,8 @@ void setup()
   // EEPROM
   EepromManager::InitEepromSettings(                        // инициализация EEPROM; запись начального состояния настроек, если их там ещё нет; инициализация настроек лампы значениями из EEPROM
     modes, &espMode, &ONflag, &currentMode, &buttonEnabled); 
+
+  if (EEPROM.read(EEPROM_LOW_PASS_ADRESS) == 0) autoLowPass();
 
   WiFiConnect(); 
     

@@ -2,8 +2,8 @@
 
 #include <ESP8266WebServer.h>
 
-#define LAMP_ID               (25)
-#define LAMP_TYPE             (1)                           // 1 - small lamp, 2 - giant lamp, 3 - board lamp
+//#define LAMP_ID               (2)
+#define LAMP_TYPE             (4)                           // 1 - small lamp, 2 - giant lamp, 3 - board lamp
 #define VERSION               (1.0)
 
 // ============= НАСТРОЙКИ =============
@@ -37,7 +37,7 @@ const uint8_t AP_STATIC_IP[] = {192, 168, 4, 1};            // статичес�
 
 // --- ЛЕНТА -------------------------
 #define BRIGHTNESS            (255U)                         // стандартная маскимальная яркость (0-255)
-#define CURRENT_LIMIT         (3000U)                       // лимит по току в миллиамперах, автоматически управляет яркостью (пожалей свой блок питания!) 0 - выключить лимит
+#define CURRENT_LIMIT         (5000U)                       // лимит по току в миллиамперах, автоматически управляет яркостью (пожалей свой блок питания!) 0 - выключить лимит
 
 #define NUM_LEDS              (300U)
 
@@ -115,6 +115,6 @@ byte count;
 float ind = (float)255 / MAX_CH;   // коэффициент перевода для палитры
 int RcurrentLevel, LcurrentLevel;
 boolean colorMusicFlash;
-int thisBright[3];
+int thisBright[4];
 float rainbow_steps;
 int this_color;
