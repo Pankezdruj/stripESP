@@ -29,5 +29,4 @@ void settingsTick() {
         SMOOTH_STEP = map(modes[14].Speed, 0, 100, 1, 255);
         break;
   }
-  //FastLED.setBrightness(modes[currentMode].Brightness);
 }

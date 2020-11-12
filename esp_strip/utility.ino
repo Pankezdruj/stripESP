@@ -24,8 +24,13 @@ void fullLowPass() {
   delay(500);               // подождать чутка
   autoLowPass();            // измерить шумы
   delay(500);               // подождать
-  FastLED.setBrightness(modes[currentMode].Brightness);  // вернуть яркость
+  FastLED.setBrightness(getBrightnessU());  // вернуть яркость
   digitalWrite(MLED_PIN, !MLED_ON);    // выключить светодиод
+}
+
+byte getBrightnessU(){
+  //Serial.println(modes[currentMode].Brightness < 50 ? 50 : modes[currentMode].Brightness);
+  return modes[currentMode].Brightness < 50 ? 50 : modes[currentMode].Brightness;
 }
 
 float floatMap(float x, float in_min, float in_max, float out_min, float out_max) {
@@ -73,7 +78,7 @@ void showWarning(
   }
 
   FastLED.clear();
-  FastLED.setBrightness(ONflag ? modes[currentMode].Brightness : 0);  // установка яркости, которая была выставлена до вызова предупреждения
+  FastLED.setBrightness(ONflag ? getBrightnessU() : 0);  // установка яркости, которая была выставлена до вызова предупреждения
   delay(1);
   FastLED.show();
   loadingFlag = true;                                       // принудительное отображение текущего эффекта (того, что был активен перед предупреждением)

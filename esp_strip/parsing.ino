@@ -54,7 +54,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       FastLED.clear();
       delay(1);
       sendCurrent(inputBuffer);
-      FastLED.setBrightness(modes[currentMode].Brightness);
+      FastLED.setBrightness(getBrightnessU());
       settingsTick();
     }
 
@@ -63,7 +63,7 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
       modes[currentMode].Brightness = constrain(atoi(buff), 1, 255);
       EepromManager::SaveModesSettings(&currentMode, modes);
-      FastLED.setBrightness(modes[currentMode].Brightness);
+      FastLED.setBrightness(getBrightnessU());
       loadingFlag = true;
       settChanged = true;
       eepromTimeout = millis();
@@ -198,7 +198,7 @@ void sendCurrent(char *outputBuffer)
     EEPROM.read(EEPROM_LAMP_ID_ADRESS),
     LAMP_TYPE,
     currentMode,
-    modes[currentMode].Brightness == 10 ? 0 : modes[currentMode].Brightness,
+    modes[currentMode].Brightness,
     modes[currentMode].BGBrightness,
     modes[currentMode].Speed,
     modes[currentMode].Color[0],
