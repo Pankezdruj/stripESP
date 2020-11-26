@@ -29,6 +29,7 @@ void effectsTick()
         if(RsoundLevel_f < 1) RsoundLevel_f = 1; else if (RsoundLevel_f > 1000) RsoundLevel_f = 200;
         if (currentMode == 3 || currentMode == 9) RsoundLevel_f = (RsoundLevel * SMOOTH) + (RsoundLevel_f * (1 - SMOOTH));
         else RsoundLevel_f = RsoundLevel; 
+        if(RsoundLevel_f > 500) RsoundLevel_f = 300;
         //Serial.print(RsoundLevel_f);
         //Serial.print(",");
         

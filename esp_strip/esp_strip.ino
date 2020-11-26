@@ -43,7 +43,6 @@ bool CaptivePortalManager::captivePortalCalled = false;
 void setup()
 {
   //Serial.begin(115200);
-  //Serial.println("beginned");
   ESP.wdtEnable(WDTO_8S);
 
   // ЛЕНТА/МАТРИЦА
